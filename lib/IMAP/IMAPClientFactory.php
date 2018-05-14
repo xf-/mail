@@ -24,6 +24,7 @@ namespace OCA\Mail\IMAP;
 use Horde_Imap_Client_Socket;
 use OCA\Mail\Account;
 use OCA\Mail\Cache\Cache;
+use OCA\Mail\Service\Logging\StreamLogger;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\Security\ICrypto;
@@ -39,15 +40,15 @@ class IMAPClientFactory {
 	/** @var ICacheFactory */
 	private $cacheFactory;
 
-	/**
-	 * @param ICrypto $crypto
-	 * @param IConfig $config
-	 * @param ICacheFactory $cacheFactory
-	 */
-	public function __construct(ICrypto $crypto, IConfig $config, ICacheFactory $cacheFactory) {
+	/** @var StreamLogger */
+	private $streamLogger;
+
+	public function __construct(ICrypto $crypto, IConfig $config,
+		ICacheFactory $cacheFactory, StreamLogger $streamLogger) {
 		$this->crypto = $crypto;
 		$this->config = $config;
 		$this->cacheFactory = $cacheFactory;
+		$this->streamLogger = $streamLogger;
 	}
 
 	/**
@@ -73,6 +74,9 @@ class IMAPClientFactory {
 			'secure' => $sslMode,
 			'timeout' => (int) $this->config->getSystemValue('app.mail.imap.timeout', 20),
 		];
+		if ($this->config->getSystemValue('debug', false)) {
+			$params['debug'] = $this->streamLogger->getStream('imap');
+		}
 		if ($this->cacheFactory->isAvailable()) {
 			$params['cache'] = [
 				'backend' => new Cache([

@@ -52,6 +52,7 @@ use OCA\Mail\Db\MailAccount;
 use OCA\Mail\Model\IMessage;
 use OCA\Mail\Model\Message;
 use OCA\Mail\Model\ReplyMessage;
+use OCA\Mail\Service\Logging\StreamLogger;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\Security\ICrypto;
@@ -76,7 +77,10 @@ class Account implements JsonSerializable {
 	/** @var ICacheFactory */
 	private $memcacheFactory;
 
-	/** @var Alias */
+	/** @var StreamLogger */
+	private $streamLogger;
+
+	  /** @var Alias */
 	private $alias;
 
 	/**
@@ -88,6 +92,7 @@ class Account implements JsonSerializable {
 		$this->crypto = OC::$server->getCrypto();
 		$this->config = OC::$server->getConfig();
 		$this->memcacheFactory = OC::$server->getMemcacheFactory();
+		$this->streamLogger = OC::$server->query(StreamLogger::class);
 		$this->alias = null;
 	}
 
@@ -145,7 +150,7 @@ class Account implements JsonSerializable {
 				'timeout' => (int) $this->config->getSystemValue('app.mail.imap.timeout', 20),
 			];
 			if ($this->config->getSystemValue('debug', false)) {
-				$params['debug'] = $this->config->getSystemValue('datadirectory') . '/horde_imap.log';
+				$params['debug'] = $this->streamLogger->getStream('imap');
 			}
 			if ($this->config->getSystemValue('app.mail.server-side-cache.enabled', true)) {
 				if ($this->memcacheFactory->isAvailable()) {
@@ -153,7 +158,7 @@ class Account implements JsonSerializable {
 						'backend' => new Cache(array(
 							'cacheob' => $this->memcacheFactory
 								->createDistributed(md5($this->getId() . $this->getEMailAddress()))
-						))];
+					))];
 				}
 			}
 			$this->client = new \Horde_Imap_Client_Socket($params);
