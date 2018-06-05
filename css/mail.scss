@@ -973,3 +973,51 @@ input.submit-message,
 		z-index: 500;
 	}
 }
+
+
+#app-navigation > ul,
+#app-settings,
+#mail-messages {
+	display: none;
+}
+
+#app-navigation {
+	position: absolute;
+	border: none;
+}
+
+#mail-new-message-fixed {
+	display: block;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+
+#mail-message {
+	left: 15%;
+	/* override mobile style */
+	display: block !important;
+}
+
+#mail-message-header {
+	position: relative;
+	width: 100% !important;
+	text-align: center;
+}
+
+#mail-message-header .transparency {
+	opacity: .5;
+}
+
+#mail-content {
+	margin-top: 0;
+}
+
+/*var elem = document.getElementById('app');
+if (elem.requestFullscreen) {
+  elem.requestFullscreen();
+}*/
+
+//$('#show-images-button').click();
+
+// https://github.com/kamlekar/slim-scroll
