@@ -45,7 +45,6 @@ define(function(require) {
 
 			return accounts;
 		}, function(e) {
-			console.error(e);
 			CrashReport.report(e);
 			Radio.ui.trigger('error:show', t('mail', 'Error while loading the accounts.'));
 		});
