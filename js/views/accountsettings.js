@@ -14,6 +14,7 @@ define(function(require) {
 	var $ = require('jquery');
 	var Marionette = require('backbone.marionette');
 	var OC = require('OC');
+	var AccountService = require('../service/accountservice');
 	var AccountSettingsTemplate = require('templates/accountsettings.html');
 	var AccountFormView = require('views/accountformview');
 	var AliasesView = require('views/aliases');
@@ -105,11 +106,11 @@ define(function(require) {
 
 			this.startLoading();
 
-			return Radio.account.request('update', config).then(function() {
+			return AccountService.updateAccount(config).then(() => {
 				var response = {status: 'success', data: {message: t('mail', 'Saved')}};
 				OC.msg.finishedSaving('#mail-settings-msg', response);
 				$('#mail-settings-loading').hide();
-			}).catch(function(error) {
+			}).catch((error) => {
 				CrashReport.report(error);
 				console.error('could not update account:', error);
 				var response = {status: 'error', data: {message: error}};

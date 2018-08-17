@@ -25,6 +25,7 @@ define(function(require) {
 	var CrashReport = require('crashreport');
 	var Radio = require('radio');
 	var AccountController = require('controller/accountcontroller');
+	var AccountService = require('../service/accountservice');
 	var AccountFormView = require('views/accountformview');
 	var ErrorView = require('views/errorview');
 	var LoadingView = require('views/loadingview');
@@ -88,18 +89,18 @@ define(function(require) {
 			this._config = config;
 			this.render();
 
-			return Radio.account.request('create', config).then(function() {
+			return AccountService.createAccount(config).then(function() {
 				Radio.ui.trigger('navigation:show');
 				Radio.ui.trigger('content:loading');
 				// reload accounts
 				return AccountController.loadAccounts();
-			}).then(function(accounts) {
+			}).then((accounts) => {
 				// Let's assume there's at least one account after a successful
 				// setup, so let's show the first one (could be the unified inbox)
 				var firstAccount = accounts.first();
 				var firstFolder = firstAccount.folders.first();
 				Radio.navigation.trigger('folder', firstAccount.get('accountId'), firstFolder.get('id'));
-			}).catch(function(error) {
+			}).catch((error) => {
 				console.error('could not create account:', error);
 				// Show error view for a few seconds
 				_this._loading = false;

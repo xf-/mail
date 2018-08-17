@@ -14,6 +14,7 @@ define(function(require) {
 	var Marionette = require('backbone.marionette');
 	var OC = require('OC');
 	var Radio = require('radio');
+	var AccountService = require('../service/accountservice');
 	var FolderListView = require('views/folderlistview');
 	var AccountTemplate = require('templates/account.html');
 
@@ -98,11 +99,11 @@ define(function(require) {
 
 			var account = this.model;
 
-			Radio.account.request('delete', account).then(function() {
+			AccountService.deleteAccount(account).then(() => {
 				// reload the complete page
 				// TODO should only reload the app nav/content
 				window.location.reload();
-			}, function() {
+			}, () => {
 				OC.Notification.show(t('mail', 'Error while deleting account.'));
 			});
 		},
@@ -141,7 +142,6 @@ define(function(require) {
 		showAccountSettings: function(e) {
 			this.toggleMenu(e);
 			Radio.navigation.trigger('accountsettings', this.model.get('accountId'));
-
 		}
 
 	});
