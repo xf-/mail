@@ -38,6 +38,8 @@ use OCP\IConfig;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 class PageController extends Controller {
 
@@ -62,6 +64,9 @@ class PageController extends Controller {
 	/** @var IUserPreferences */
 	private $preferences;
 
+    /** @var EventDispatcherInterface */
+    protected $eventDispatcher;
+
 	/**
 	 * @param string $appName
 	 * @param IRequest $request
@@ -75,7 +80,7 @@ class PageController extends Controller {
 	public function __construct(string $appName, IRequest $request,
 								IURLGenerator $urlGenerator, IConfig $config, AccountService $accountService,
 								AliasesService $aliasesService, string $UserId, IUserSession $userSession,
-								IUserPreferences $preferences) {
+								IUserPreferences $preferences, EventDispatcherInterface $eventDispatcherInterface) {
 		parent::__construct($appName, $request);
 
 		$this->urlGenerator = $urlGenerator;
@@ -85,6 +90,7 @@ class PageController extends Controller {
 		$this->currentUserId = $UserId;
 		$this->userSession = $userSession;
 		$this->preferences = $preferences;
+        $this->eventDispatcher = $eventDispatcherInterface;
 	}
 
 	/**
@@ -119,6 +125,9 @@ class PageController extends Controller {
 		$csp = new ContentSecurityPolicy();
 		$csp->addAllowedFrameDomain('\'self\'');
 		$response->setContentSecurityPolicy($csp);
+
+        $event = new GenericEvent(null, ['hiddenFields' => []]);
+        $this->eventDispatcher->dispatch('OCA\Mail::loadAdditionalScripts', $event);
 
 		return $response;
 	}
