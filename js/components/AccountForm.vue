@@ -1,135 +1,151 @@
 <template>
-    <div id="account-form">
-        <form method="post" v-on:submit.prevent.stop="onSubmit">
-        <div class="hidden-visually">
-            <!-- Hack for Safari and Chromium/Chrome which ignore autocomplete="off" -->
-            <input type="text" id="fake_user" name="fake_user"
-                autocomplete="off" tabindex="-1">
-            <input type="password" id="fake_password" name="fake_password"
-                autocomplete="off" tabindex="-1">
+  <div id="account-form">
+    <form method="post" @submit.prevent.stop="onSubmit">
+      <div class="hidden-visually">
+        <!-- Hack for Safari and Chromium/Chrome which ignore autocomplete="off" -->
+        <input id="fake_user" type="text" name="fake_user"
+               autocomplete="off" tabindex="-1"
+        >
+        <input id="fake_password" type="password" name="fake_password"
+               autocomplete="off" tabindex="-1"
+        >
+      </div>
+      <fieldset>
+        <div id="emptycontent" ref="emptyContent">
+          <div class="icon-mail" />
+          <h2>{{ t('mail', 'Connect your mail account') }}</h2>
         </div>
-        <fieldset>
-            <div id="emptycontent" ref="emptyContent">
-                <div class="icon-mail"></div>
-                <h2>{{ t('mail', 'Connect your mail account') }}</h2>
-            </div>
-            <p class="grouptop">
-                <input type="text"
-                    ref="accountName"
-                    name="account-name"
-                    :placeholder="t('mail', 'Name')"
-                    v-model="config.accountName"
-                    autofocus />
-            </p>
-            <p class="groupmiddle">
-                <input type="email"
-                    ref="mailAddress"
-                    name="mail-address"
-                    :placeholder="t('mail', 'Mail Address')"
-                    v-model="config.emailAddress"
-                    required />
-            </p>
-            <p class="groupbottom">
-                <input type="password"
-                    name="mail-password"
-                    ref="mailPassword"
-                    :placeholder="t('mail', 'Password')"
-                    v-model="config.password"
-                    required />
-            </p>
+        <p class="grouptop">
+          <input ref="accountName"
+                 v-model="config.accountName"
+                 type="text"
+                 name="account-name"
+                 :placeholder="t('mail', 'Name')"
+                 autofocus
+          >
+        </p>
+        <p class="groupmiddle">
+          <input ref="mailAddress"
+                 v-model="config.emailAddress"
+                 type="email"
+                 name="mail-address"
+                 :placeholder="t('mail', 'Mail Address')"
+                 required
+          >
+        </p>
+        <p class="groupbottom">
+          <input ref="mailPassword"
+                 v-model="config.password"
+                 type="password"
+                 name="mail-password"
+                 :placeholder="t('mail', 'Password')"
+                 required
+          >
+        </p>
 
-            <a class="toggle-manual-mode icon-caret-dark" v-on:click.stop="toggleManualMode">{{ t('mail', 'Manual configuration') }}</a>
+        <a class="toggle-manual-mode icon-caret-dark" @click.stop="toggleManualMode">{{ t('mail', 'Manual configuration') }}</a>
 
-            <div class="manual-inputs" ref="manualInputs">
-                <p class="grouptop">
-                    <input type="text"
-                        name="imap-host"
-                        ref="imapHost"
-                        :placeholder="t('mail', 'IMAP Host')"
-                        v-model="config.imapHost" />
-                </p>
-                <p class="groupmiddle" id="setup-imap-ssl">
-                    <select id="setup-imap-ssl-mode"
-                        v-model="config.imapSslMode"
-                        ref="imapSslMode"
-                        name="imap-sslmode"
-                        :title="t('mail', 'IMAP security')"
-                        v-on:change="onImapSslModeChange">
-                        <option value="none">{{ t('mail', 'None') }}</option>
-                        <option value="ssl">{{ t('mail', 'SSL/TLS') }}</option>
-                        <option value="tls">{{ t('mail', 'STARTTLS') }}</option>
-                    </select>
-                </p>
-                <p class="groupmiddle">
-                    <input type="number"
-                        ref="imapPort"
-                        name="imap-port"
-                        :placeholder="t('mail', 'IMAP Port')"
-                        v-model="config.imapPort" />
-                </p>
-                <p class="groupmiddle">
-                    <input type="text"
-                        ref="imapUser"
-                        name="imap-user"
-                        :placeholder="t('mail', 'IMAP User')"
-                        v-model="config.imapUser" />
-                </p>
-                <p class="groupbottom">
-                    <input type="password"
-                        ref="imapPassword"
-                        name="imap-password"
-                        :placeholder="t('mail', 'IMAP Password')"
-                        v-model="config.imapPassword" />
-                </p>
-                <p class="grouptop">
-                    <input type="text"
-                        ref="smtpHost"
-                        name="smtp-host"
-                        :placeholder="t('mail', 'SMTP Host')"
-                        v-model="config.smtpHost" />
-                </p>
-                <p class="groupmiddle" id="setup-smtp-ssl">
-                    <select id="setup-smtp-ssl-mode"
-                        v-model="config.smtpSslMode"
-                        ref="smtpSslMode"
-                        name="mail-smtp-sslmode"
-                        :title="t('mail', 'SMTP security')"
-                        v-on:change="onSmtpSslModeChange">
-                        <option value="none">{{ t('mail', 'None') }}</option>
-                        <option value="ssl">{{ t('mail', 'SSL/TLS') }}</option>
-                        <option value="tls">{{ t('mail', 'STARTTLS') }}</option>
-                    </select>
-                </p>
-                <p class="groupmiddle">
-                    <input type="number"
-                        ref="smtpPort"
-                        name="smtp-port"
-                        :placeholder="t('mail', 'SMTP Port')"
-                        v-model="config.smtpPort" />
-                </p>
-                <p class="groupmiddle">
-                    <input type="text"
-                        ref="smtpUser"
-                        name="smtp-user"
-                        :placeholder="t('mail', 'SMTP User')"
-                        v-model="config.smtpUser" />
-                </p>
-                <p class="groupbottom">
-                    <input type="password"
-                        ref="smtpPassword"
-                        name="smtp-password"
-                        :placeholder="t('mail', 'SMTP Password')"
-                        v-model="config.smtpPassword" />
-                </p>
-            </div>
+        <div ref="manualInputs" class="manual-inputs">
+          <p class="grouptop">
+            <input ref="imapHost"
+                   v-model="config.imapHost"
+                   type="text"
+                   name="imap-host"
+                   :placeholder="t('mail', 'IMAP Host')"
+            >
+          </p>
+          <p id="setup-imap-ssl" class="groupmiddle">
+            <select id="setup-imap-ssl-mode"
+                    ref="imapSslMode"
+                    v-model="config.imapSslMode"
+                    name="imap-sslmode"
+                    :title="t('mail', 'IMAP security')"
+                    @change="onImapSslModeChange"
+            >
+              <option value="none">{{ t('mail', 'None') }}</option>
+              <option value="ssl">{{ t('mail', 'SSL/TLS') }}</option>
+              <option value="tls">{{ t('mail', 'STARTTLS') }}</option>
+            </select>
+          </p>
+          <p class="groupmiddle">
+            <input ref="imapPort"
+                   v-model="config.imapPort"
+                   type="number"
+                   name="imap-port"
+                   :placeholder="t('mail', 'IMAP Port')"
+            >
+          </p>
+          <p class="groupmiddle">
+            <input ref="imapUser"
+                   v-model="config.imapUser"
+                   type="text"
+                   name="imap-user"
+                   :placeholder="t('mail', 'IMAP User')"
+            >
+          </p>
+          <p class="groupbottom">
+            <input ref="imapPassword"
+                   v-model="config.imapPassword"
+                   type="password"
+                   name="imap-password"
+                   :placeholder="t('mail', 'IMAP Password')"
+            >
+          </p>
+          <p class="grouptop">
+            <input ref="smtpHost"
+                   v-model="config.smtpHost"
+                   type="text"
+                   name="smtp-host"
+                   :placeholder="t('mail', 'SMTP Host')"
+            >
+          </p>
+          <p id="setup-smtp-ssl" class="groupmiddle">
+            <select id="setup-smtp-ssl-mode"
+                    ref="smtpSslMode"
+                    v-model="config.smtpSslMode"
+                    name="mail-smtp-sslmode"
+                    :title="t('mail', 'SMTP security')"
+                    @change="onSmtpSslModeChange"
+            >
+              <option value="none">{{ t('mail', 'None') }}</option>
+              <option value="ssl">{{ t('mail', 'SSL/TLS') }}</option>
+              <option value="tls">{{ t('mail', 'STARTTLS') }}</option>
+            </select>
+          </p>
+          <p class="groupmiddle">
+            <input ref="smtpPort"
+                   v-model="config.smtpPort"
+                   type="number"
+                   name="smtp-port"
+                   :placeholder="t('mail', 'SMTP Port')"
+            >
+          </p>
+          <p class="groupmiddle">
+            <input ref="smtpUser"
+                   v-model="config.smtpUser"
+                   type="text"
+                   name="smtp-user"
+                   :placeholder="t('mail', 'SMTP User')"
+            >
+          </p>
+          <p class="groupbottom">
+            <input ref="smtpPassword"
+                   v-model="config.smtpPassword"
+                   type="password"
+                   name="smtp-password"
+                   :placeholder="t('mail', 'SMTP Password')"
+            >
+          </p>
+        </div>
 
-            <input type="submit"
-                ref="submitButton"
-                class="primary"
-                :value="t('mail', 'Connect')"/>
-            </fieldset>
-        </form>
-    </div>
+        <input ref="submitButton"
+               type="submit"
+               class="primary"
+               :value="t('mail', 'Connect')"
+        >
+      </fieldset>
+    </form>
+  </div>
 </template>
 
 <script>
@@ -183,9 +199,6 @@ export default {
 				if (this.firstToggle) {
 					// Manual mode opened for the first time
 					// -> copy email, password for imap&smtp
-					const email = this.config.emailAddress
-					const password = this.config.password
-
 					this.config.imapUser = this.config.emailAddress
 					this.config.imapPassword = this.config.password
 					this.config.smtpUser = this.config.emailAddress
@@ -269,6 +282,7 @@ export default {
 				}
 			}
 			// TODO: Handle form submit
+			this.$store.dispatch('requestCreateAccount', config)
 		},
 	},
 }
