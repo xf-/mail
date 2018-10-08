@@ -79,8 +79,7 @@
                         ref="imapPassword"
                         name="imap-password"
                         :placeholder="t('mail', 'IMAP Password')"
-                        v-model="config.imapPassword"
-                        required />
+                        v-model="config.imapPassword" />
                 </p>
                 <p class="grouptop">
                     <input type="text"
@@ -120,8 +119,7 @@
                         ref="smtpPassword"
                         name="smtp-password"
                         :placeholder="t('mail', 'SMTP Password')"
-                        v-model="config.smtpPassword"
-                        required />
+                        v-model="config.smtpPassword" />
                 </p>
             </div>
 
@@ -136,143 +134,142 @@
 
 <script>
 export default {
-  name: 'AccountForm',
-  props: {
-    settingsPage: Boolean
-  },
-  data() {
-    return {
-      firstToggle: true,
-      config: {
-        accountName: $('#user-displayname').text() || '',
-        emailAddress: $('#user-email').text() || '',
-        password: '',
-        accountName: '',
-        autoDetect: true,
-        imapHost: '',
-        imapPort: 993,
-        imapSslMode: 'ssl',
-        imapUser: '',
-        imapPassword: '',
-        smtpHost: '',
-        smtpPort: 587,
-        smtpSslMode: 'tls',
-        smtpUser: '',
-        smtpPassword: '',
-      }
-    };
-  },
-  mounted() {
-    if (this.settingsPage) {
-      $(this.$refs.emptyContent).hide();
-      $(this.$refs.submitButton).val(t('mail', 'Save'));
-    }
+	name: 'AccountForm',
+	props: {
+		settingsPage: Boolean,
+	},
+	data() {
+		return {
+			firstToggle: true,
+			config: {
+				accountName: $('#user-displayname').text() || '',
+				emailAddress: $('#user-email').text() || '',
+				password: '',
+				autoDetect: true,
+				imapHost: '',
+				imapPort: 993,
+				imapSslMode: 'ssl',
+				imapUser: '',
+				imapPassword: '',
+				smtpHost: '',
+				smtpPort: 587,
+				smtpSslMode: 'tls',
+				smtpUser: '',
+				smtpPassword: '',
+			},
+		}
+	},
+	mounted() {
+		if (this.settingsPage) {
+			$(this.$refs.emptyContent).hide()
+			$(this.$refs.submitButton).val(t('mail', 'Save'))
+		}
 
-    if (this.config.autoDetect) {
-      $(this.$refs.mailPassword).show();
-      $(this.$refs.manualInputs).hide();
-    } else {
-      $(this.$refs.mailPassword).hide();
-    }
-  },
-  methods: {
-    toggleManualMode: function() {
-      this.config.autoDetect = !this.config.autoDetect;
+		if (this.config.autoDetect) {
+			$(this.$refs.mailPassword).show()
+			$(this.$refs.manualInputs).hide()
+		} else {
+			$(this.$refs.mailPassword).hide()
+		}
+	},
+	methods: {
+		toggleManualMode: function() {
+			this.config.autoDetect = !this.config.autoDetect
 
-      $(this.$refs.manualInputs).slideToggle();
-      this.$refs.imapHost.focus();
+			$(this.$refs.manualInputs).slideToggle()
+			this.$refs.imapHost.focus()
 
-      if (!this.config.autoDetect) {
-        if (this.firstToggle) {
-          // Manual mode opened for the first time
-          // -> copy email, password for imap&smtp
-          const email = this.config.emailAddress;
-          const password = this.config.password;
+			if (!this.config.autoDetect) {
+				if (this.firstToggle) {
+					// Manual mode opened for the first time
+					// -> copy email, password for imap&smtp
+					const email = this.config.emailAddress
+					const password = this.config.password
 
-          this.config.imapUser = this.config.emailAddress;
-          this.config.imapPassword = this.config.password;
-          this.config.smtpUser = this.config.emailAddress;
-          this.config.smtpPassword = this.config.password;
-          this.firstToggle = false;
-        }
+					this.config.imapUser = this.config.emailAddress
+					this.config.imapPassword = this.config.password
+					this.config.smtpUser = this.config.emailAddress
+					this.config.smtpPassword = this.config.password
+					this.firstToggle = false
+				}
 
-        $(this.$refs.mailPassword).slideToggle(() => {
-          $(this.$refs.mailAddress)
-            .parent()
-            .removeClass('groupmiddle')
-            .addClass('groupbottom');
-          // Focus imap host input
-          this.$refs.imapHost.focus();
-        });
-      } else {
-        $(this.$refs.mailPassword).slideToggle();
-        $(this.$refs.mailAddress)
-          .parent()
-          .removeClass('groupbottom')
-          .addClass('groupmiddle');
-      }
-    },
-    onImapSslModeChange: function() {
-      const imapDefaultPort = 143;
-      const imapDefaultSecurePort = 993;
+				$(this.$refs.mailPassword).slideToggle(() => {
+					$(this.$refs.mailAddress)
+						.parent()
+						.removeClass('groupmiddle')
+						.addClass('groupbottom')
+					// Focus imap host input
+					this.$refs.imapHost.focus()
+				})
+			} else {
+				$(this.$refs.mailPassword).slideToggle()
+				$(this.$refs.mailAddress)
+					.parent()
+					.removeClass('groupbottom')
+					.addClass('groupmiddle')
+			}
+		},
+		onImapSslModeChange: function() {
+			const imapDefaultPort = 143
+			const imapDefaultSecurePort = 993
 
-      switch (this.config.imapSslMode) {
-        case 'none':
-        case 'tls':
-          this.config.imapPort = imapDefaultPort;
-          break;
-        case 'ssl':
-          this.config.imapPort = imapDefaultSecurePort;
-          break;
-      }
-    },
-    onSmtpSslModeChange: function() {
-      const smtpDefaultPort = 587;
-      const smtpDefaultSecurePort = 465;
+			switch (this.config.imapSslMode) {
+				case 'none':
+				case 'tls':
+					this.config.imapPort = imapDefaultPort
+					break
+				case 'ssl':
+					this.config.imapPort = imapDefaultSecurePort
+					break
+			}
+		},
+		onSmtpSslModeChange: function() {
+			const smtpDefaultPort = 587
+			const smtpDefaultSecurePort = 465
 
-      switch (this.config.smtpSslMode) {
-        case 'none':
-        case 'tls':
-          this.config.smtpPort = smtpDefaultPort;
-          break;
-        case 'ssl':
-          this.config.smtpPort = smtpDefaultSecurePort;
-          break;
-      }
-    },
-    onSubmit: function() {
-      const emailAddress = this.config.emailAddress
-      const accountName = this.config.accountName;
-      const password = this.config.password;
+			switch (this.config.smtpSslMode) {
+				case 'none':
+				case 'tls':
+					this.config.smtpPort = smtpDefaultPort
+					break
+				case 'ssl':
+					this.config.smtpPort = smtpDefaultSecurePort
+					break
+			}
+		},
+		onSubmit: function() {
+			const emailAddress = this.config.emailAddress
+			const accountName = this.config.accountName
+			const password = this.config.password
 
-      let config = {
-        accountName,
-        emailAddress,
-        password,
-        autoDetect: true
-      };
+			let config = {
+				accountName,
+				emailAddress,
+				password,
+				autoDetect: true,
+			}
 
-      // if manual setup is open, use manual values
-      if (!this.config.autoDetect) {
-        config = {
-          accountName,
-          emailAddress,
-          password,
-          imapHost: this.config.imapHost,
-          imapPort: this.config.imapPort,
-          imapSslMode: this.config.imapSslMode,
-          imapUser: this.config.imapUser,
-          imapPassword: this.config.imapPassword,
-          smtpHost: this.config.smtpHost,
-          smtpPort: this.config.smtpPort,
-          smtpSslMode: this.config.smtpSslMode,
-          smtpUser: this.config.smtpUser,
-          smtpPassword: this.config.smtpPassword,
-          autoDetect: false
-        };
-      }
-      // TODO: Handle form submit
-    }
-  }
-};
+			// if manual setup is open, use manual values
+			if (!this.config.autoDetect) {
+				config = {
+					accountName,
+					emailAddress,
+					password,
+					imapHost: this.config.imapHost,
+					imapPort: this.config.imapPort,
+					imapSslMode: this.config.imapSslMode,
+					imapUser: this.config.imapUser,
+					imapPassword: this.config.imapPassword,
+					smtpHost: this.config.smtpHost,
+					smtpPort: this.config.smtpPort,
+					smtpSslMode: this.config.smtpSslMode,
+					smtpUser: this.config.smtpUser,
+					smtpPassword: this.config.smtpPassword,
+					autoDetect: false,
+				}
+			}
+			// TODO: Handle form submit
+		},
+	},
+}
 </script>
