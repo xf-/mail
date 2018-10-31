@@ -301,6 +301,7 @@ export default new Vuex.Store({
 		folders: {},
 		envelopes: {},
 		messages: {},
+		autocompleteEntries: [],
 	},
 	getters,
 	mutations,

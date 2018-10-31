@@ -9,49 +9,53 @@
 			</option>
 		</select>
 		<div class="composer-fields">
-			<a href="#" :class="{
-				'composer-cc-bcc-toggle': true,
-				transparency: true,
-				hidden: hasCC,
-				}">{{ t ('mail', '+ cc/bcc') }}</a>
+			<a href="#"
+			   class="composer-cc-bcc-toggle transparency"
+			   :class="{ hidden: hasCC }">
+				{{ t ('mail', '+ cc/bcc') }}
+			</a>
+			<label class="to-label transparency" for="to">
+				{{ t('mail', 'to') }}
+			</label>
+			<Multiselect :options="toVal"
+						 id="to"
+					     v-on:keyup="onInputChanged" />
+		</div>
+		<div class="composer-fields"
+			 v-if="hasCC">
+			<label for="cc" class="cc-label transparency">
+				{{ t('mail', 'cc') }}
+			</label>
+			<Multiselect :options="ccVal"
+						 id="cc"
+						 v-on:keyup="onInputChanged" />
+		</div>
+		<div class="composer-fields"
+			 v-if="hasCC">
+			<label for="bcc" class="bcc-label transparency">
+				{{ t('mail', 'bcc') }}
+			</label>
+			<Multiselect :options="bccVal"
+						 id="bcc"
+						 v-on:keyup="onInputChanged" />
+		</div>
+		<div class="composer-fields">
+			<label for="subject" class="subject-label transparency">
+				{{ t('mail', 'Subject') }}
+			</label>
 			<input type="text"
-				   id="to"
-				   v-model="toVal"
-				   v-on:keyup="onInputChanged"
-				   class="to recipient-autocomplete"/>
-			<label class="to-label transparency" for="to">{{ t('mail', 'to')
-				}}</label>
-			<div :class="{ 'composer-cc-bcc': true, hidden: !hasCC }">
-				<input type="text"
-					   id="cc"
-					   class="cc recipient-autocomplete"
-					   v-model="ccVal"
-					   v-on:keyup="onInputChanged">
-				<label for="cc" class="cc-label transparency">
-					{{ t('mail', 'cc') }}
-				</label>
-				<input type="text"
-					   id="bcc"
-					   class="bcc recipient-autocomplete"
-					   v-model="bccVal"
-					   v-on:keyup="onInputChanged">
-				<label for="bcc" class="bcc-label transparency">
-					{{ t('mail', 'bcc') }}
-				</label>
-			</div>
-
-			<div v-if="noReply"
-				 class="warning noreply-box">
-				{{ t('mail', 'Note that the mail came from a noreply address so	your reply will probably not be read.') }}
-			</div>
-			<input v-else
-				   type="text"
+				   id="subject"
 				   name="subject"
 				   v-model="subjectVal"
 				   v-on:keyup="onInputChanged"
 				   class="subject" autocomplete="off"
 				   :placeholder="t('mail', 'Subject')"/>
-
+		</div>
+		<div class="composer-fields">
+			<div v-if="noReply"
+				 class="warning noreply-box">
+				{{ t('mail', 'Note that the mail came from a noreply address so	your reply will probably not be read.') }}
+			</div>
 			<textarea name="body"
 					  class="message-body"
 					  v-autosize
@@ -93,6 +97,7 @@
 <script>
 	import _ from 'lodash'
 	import Autosize from 'vue-autosize'
+	import {Multiselect} from 'nextcloud-vue'
 	import Vue from 'vue'
 
 	import Loading from './Loading'
@@ -112,6 +117,7 @@
 		components: {
 			ComposerAttachments,
 			Loading,
+			Multiselect,
 		},
 		props: {
 			replyTo: {
@@ -142,9 +148,9 @@
 			return {
 				hasCC: true,
 				selectedAlias: this.$route.params.accountId,
-				toVal: this.addressListPlain(this.to),
-				ccVal: this.addressListPlain(this.cc),
-				bccVal: '',
+				toVal: this.to,
+				ccVal: this.cc,
+				bccVal: [],
 				subjectVal: this.subject,
 				bodyVal: '',
 				attachments: [],
@@ -171,9 +177,6 @@
 
 		},
 		methods: {
-			addressListPlain (addresses) {
-				return addresses.join('; ')
-			},
 			getMessageData () {
 				return uid => {
 					return {
@@ -233,10 +236,126 @@
 	}
 </script>
 
-<style>
+<style scoped>
+	.message-composer {
+		margin: 0;
+		margin-bottom: 10px; /* line up with the send button */
+		z-index: 100;
+	}
+
+	#reply-composer .message-composer {
+		margin: 0;
+	}
+
+	.composer-fields {
+		display: flex;
+		border-top: 1px solid #eee;
+	}
+	.composer-fields .multiselect,
+	.composer-fields input,
+	.composer-fields textarea {
+		flex-grow: 1;
+		max-width: none;
+		border-left: none;
+		border-right: none;
+		border-radius: 0px;
+	}
+
+	#to,
+	#cc,
+	#bcc {
+		border: none;
+	}
+
+	#to,
+	#cc,
+	#bcc,
+	input.subject,
+	textarea.message-body {
+		padding: 12px;
+		padding-left: 64px;
+		margin: 0;
+	}
+
+	#to {
+		padding-right: 60px; /* for cc-bcc-toggle */
+	}
+
+	input.cc,
+	input.bcc,
+	input.subject,
+	textarea.message-body {
+		border-top: none;
+	}
+
+	input.subject {
+		font-size: 20px;
+		font-weight: 300;
+	}
+
+	input.subject,
+	textarea.message-body {
+		padding-left: 30px;
+	}
+
+	textarea.message-body {
+		min-height: 300px;
+		resize: none;
+		padding-right: 25%;
+	}
+
 	#draft-status {
 		padding: 5px;
 		opacity: 0.5;
 		font-size: small;
+	}
+
+	label.to-label,
+	label.cc-label,
+	label.bcc-label,
+	label.subject-label {
+		padding: 12px;
+		padding-left: 30px;
+		cursor: text;
+		opacity: .5;
+	}
+
+	label.bcc-label {
+		top: initial;
+		bottom: 0;
+	}
+
+	.composer-cc-bcc-toggle {
+		position: absolute;
+		right: 0;
+		padding: 12px;
+	}
+
+	textarea.reply {
+		min-height: 100px;
+	}
+
+	input.submit-message,
+	.submit-message-wrapper {
+		position: fixed;
+		bottom: 10px;
+		right: 15px;
+	}
+
+	.submit-message-wrapper {
+		position: fixed;
+		height: 36px;
+		width: 60px;
+	}
+
+	.submit-message.send {
+		padding: 12px;
+	}
+
+</style>
+
+<style>
+	.multiselect .multiselect__tags {
+		border: none;
 	}
 </style>
