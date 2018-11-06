@@ -184,14 +184,6 @@
 			}
 		},
 		methods: {
-					.map(addr => {
-						if (addr.label && addr.label !== addr.email) {
-							return `"${addr.label}" <${addr.email}>`
-						} else {
-							return addr.email
-						}
-					})
-					.join('; ')
 			getMessageData () {
 				return uid => {
 					return {
