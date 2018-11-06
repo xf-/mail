@@ -123,6 +123,9 @@
 			replyTo: {
 				type: Object,
 			},
+			fromAccount: {
+				type: Number,
+			},
 			to: {
 				type: Array,
 				default: () => [],
@@ -155,7 +158,7 @@
 		data () {
 			return {
 				hasCC: true,
-				selectedAlias: this.$route.params.accountId, // TODO: fix for unified inbox
+				selectedAlias: this.fromAccount,
 				toVal: this.to,
 				ccVal: this.cc,
 				bccVal: this.bcc,
