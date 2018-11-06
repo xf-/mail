@@ -101,7 +101,7 @@
 	import Vue from 'vue'
 
 	import Loading from './Loading'
-	import ComposerAttachments from "./ComposerAttachments";
+	import ComposerAttachments from './ComposerAttachments'
 
 	Vue.use(Autosize)
 
@@ -131,9 +131,17 @@
 				type: Array,
 				default: () => [],
 			},
+			bcc: {
+				type: Array,
+				default: () => [],
+			},
 			subject: {
 				type: String,
 				default: '',
+			},
+			body: {
+				type: String,
+				default: ''
 			},
 			draft: {
 				type: Function,
@@ -147,14 +155,16 @@
 		data () {
 			return {
 				hasCC: true,
-				selectedAlias: this.$route.params.accountId,
+				selectedAlias: this.$route.params.accountId, // TODO: fix for unified inbox
 				toVal: this.to,
 				ccVal: this.cc,
-				bccVal: [],
+				bccVal: this.bcc,
 				subjectVal: this.subject,
-				bodyVal: '',
+				bodyVal: this.body,
 				attachments: [],
-				noReply: false,
+				noReply: this.to.some(to =>
+					to.email.startsWith('noreply@') || to.email.startsWith('no-reply@')
+				),
 				message: '',
 				submitButtonTitle: t('mail', 'Send'),
 				draftsPromise: Promise.resolve(),
@@ -173,10 +183,15 @@
 				return !_.isUndefined(this.replyTo)
 			}
 		},
-		filters: {
-
-		},
 		methods: {
+					.map(addr => {
+						if (addr.label && addr.label !== addr.email) {
+							return `"${addr.label}" <${addr.email}>`
+						} else {
+							return addr.email
+						}
+					})
+					.join('; ')
 			getMessageData () {
 				return uid => {
 					return {

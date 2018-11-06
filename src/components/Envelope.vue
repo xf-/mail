@@ -17,7 +17,7 @@
       @click="toggleFlagged"
     />
     <div class="app-content-list-item-icon">
-      <Avatar :label="sender" />
+      <Avatar :displayName="sender" />
     </div>
     <div
       class="app-content-list-item-line-one"
@@ -40,43 +40,26 @@
       {{ data.subject }}
     </div>
     <div class="app-content-list-item-details date">
-      <Moment :timestamp="data.dateInt * 1000" />
+      <Moment :timestamp="data.dateInt" />
     </div>
-    <div class="app-content-list-item-menu">
-      <div
-        class="icon-more"
-        @click="togglePopoverMenu"
-      />
-      <div
-        class="popovermenu"
-        :class="{open: menuOpened}"
-      >
-        <PopoverMenu :menu="popoverMenu" />
-      </div>
-    </div>
+    <Action class="app-content-list-item-menu"
+            :actions="actions" />
   </router-link>
 </template>
 
 <script>
-import { PopoverMenu, PopoverMenuItem } from 'nextcloud-vue'
+import { Action, Avatar, PopoverMenu, PopoverMenuItem } from 'nextcloud-vue'
 
-import Avatar from './Avatar'
 import Moment from './Moment'
 
 export default {
 	name: 'Envelope',
 	components: {
-		PopoverMenuItem,
+		Action,
 		Avatar,
 		Moment,
-		PopoverMenu,
 	},
 	props: ['data'],
-	data() {
-		return {
-			menuOpened: false,
-		}
-	},
 	computed: {
 		sender() {
 			if (this.data.from.length === 0) {
@@ -87,14 +70,12 @@ export default {
 			const first = this.data.from[0]
 			return first.label || first.email
 		},
-		popoverMenu() {
+		actions() {
 			return [
 				{
 					icon: 'icon-mail',
 					text: t('mail', 'Seen'),
 					action: () => {
-						this.menuOpened = false
-
 						this.$store.dispatch('toggleEnvelopeSeen', {
 							accountId: this.$route.params.accountId,
 							folderId: this.$route.params.folderId,
@@ -106,8 +87,6 @@ export default {
 					icon: 'icon-delete',
 					text: t('mail', 'Delete'),
 					action: () => {
-						this.menuOpened = false
-
 						this.$store.dispatch('deleteMessage', {
 							accountId: this.$route.params.accountId,
 							folderId: this.$route.params.folderId,
@@ -128,9 +107,6 @@ export default {
 				folderId: this.$route.params.folderId,
 				id: this.data.id,
 			})
-		},
-		togglePopoverMenu() {
-			this.menuOpened = !this.menuOpened
 		},
 	},
 }

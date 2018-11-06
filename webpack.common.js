@@ -8,6 +8,9 @@ module.exports = {
 		publicPath: '/js/',
 		filename: 'mail.js'
 	},
+	node: {
+		fs: 'empty'
+	},
 	module: {
 		rules: [
 			{
@@ -54,6 +57,7 @@ module.exports = {
 	},
 	plugins: [new VueLoaderPlugin()],
 	resolve: {
-		extensions: ['*', '.js', '.vue', '.json']
+		extensions: ['*', '.js', '.vue', '.json'],
+		symlinks: false
 	}
 };
