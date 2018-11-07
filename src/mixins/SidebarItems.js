@@ -1,6 +1,6 @@
-import conv from 'color-convert'
-import md5 from 'md5'
 import {translate as t} from 'nextcloud-server/dist/l10n'
+
+import {calculateAccountColor} from '../util/AccountColor'
 
 const SHOW_COLLAPSED = Object.seal([
 	'inbox',
@@ -11,26 +11,19 @@ const SHOW_COLLAPSED = Object.seal([
 
 export default {
 	methods: {
-		accountBulletColor (name) {
-			const hashed = md5(name)
-			const hsl = conv.hex.hsl(hashed)
-			const fixedHsl = [Math.round(hsl[0] / 40) * 40, hsl[1], hsl[2]]
-			return '#' + conv.hsl.hex(fixedHsl)
-		},
-
 		buildMenu () {
 			let items = [];
 
 			let accounts = this.$store.getters.getAccounts();
 			for (let id in accounts) {
-				let account = accounts[id];
+				const account = accounts[id]
 
-				if (account.visible !== false) {
+				if (account.isUnified !== true && account.visible !== false) {
 					items.push({
 						id: 'account' + account.id,
 						key: 'account' + account.id,
 						text: account.emailAddress,
-						bullet: this.accountBulletColor(account.name), // TODO
+						bullet: calculateAccountColor(account.name), // TODO
 						router: {
 							name: 'accountSettings',
 							params: {
@@ -67,12 +60,14 @@ export default {
 						})
 					})
 
-				items.push({
-					id: 'collapse-' + account.id,
-					key: 'collapse-' + account.id,
-					text: account.collapsed ? t('mail', 'Show all folders') : t('mail', 'Collapse folders'),
-					action: () => this.$store.commit('toggleAccountCollapsed', account.id)
-				})
+				if (!account.isUnified) {
+					items.push({
+						id: 'collapse-' + account.id,
+						key: 'collapse-' + account.id,
+						text: account.collapsed ? t('mail', 'Show all folders') : t('mail', 'Collapse folders'),
+						action: () => this.$store.commit('toggleAccountCollapsed', account.id)
+					})
+				}
 			}
 
 			return {
