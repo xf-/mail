@@ -16,6 +16,7 @@ import {
 	setEnvelopeFlag,
 	syncEnvelopes,
 } from './service/MessageService'
+import {fetchAvatarUrl} from './service/AvatarService'
 import {showNewMessagesNotification} from './service/NotificationService'
 import {parseUid} from './util/EnvelopeUidParser'
 
@@ -130,6 +131,9 @@ export const mutations = {
 	},
 	removeMessage (state, {accountId, folderId, id}) {
 		Vue.delete(state.messages, accountId + '-' + folderId + '-' + id)
+	},
+	addAvatarUrl (state, {email, url}) {
+		Vue.set(state.avatarUrls, email, url)
 	}
 }
 
@@ -494,6 +498,19 @@ export const actions = {
 				})
 				throw err
 			})
+	},
+	fetchAvatarUrl ({commit, getters}, email) {
+		if (getters.hasAvatarUrl(email)) {
+			return Promise.resolve(getters.getAvatarUrl(email))
+		}
+		return fetchAvatarUrl(email)
+			.then(url => {
+				commit('addAvatarUrl', {
+					email,
+					url,
+				})
+				return url
+			})
 	}
 }
 
@@ -532,6 +549,12 @@ export const getters = {
 	},
 	getMessageByUid: (state) => uid => {
 		return state.messages[uid]
+	},
+	hasAvatarUrl: (state) => email => {
+		return email in state.avatarUrls
+	},
+	getAvatarUrl: (state) => email => {
+		return state.avatarUrls[email]
 	}
 }
 
@@ -565,6 +588,7 @@ export default new Vuex.Store({
 		},
 		envelopes: {},
 		messages: {},
+		avatarUrls: {}
 	},
 	getters,
 	mutations,
