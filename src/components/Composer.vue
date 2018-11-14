@@ -1,13 +1,17 @@
 <template>
 	<div v-if="state === STATES.EDITING"
 		 class="message-composer">
-		<select class="mail-account"
-				v-model="selectedAlias"
-				v-on:keyup="onInputChanged">
-			<option v-for="alias in aliases" :value="alias.id">
-				{{ t('mail', 'from') }} {{alias.name}} &lt;{{alias.emailAddress}}&gt;
-			</option>
-		</select>
+		<div class="composer-fields mail-account">
+			<label class="to-label transparency" for="from">
+				{{ t('mail', 'from') }}
+			</label>
+			<Multiselect :options="aliases"
+						 id="from"
+						 v-model="selectedAlias"
+						 @keyup="onInputChanged"
+						 label="name" track-by="id"
+						 :customLabel="formatAliases" />
+		</div>
 		<div class="composer-fields">
 			<a href="#"
 			   class="composer-cc-bcc-toggle transparency"
@@ -19,7 +23,10 @@
 			</label>
 			<Multiselect :options="toVal"
 						 id="to"
-					     v-on:keyup="onInputChanged" />
+					     @keyup="onInputChanged"
+						 v-model="selectTo"
+						 label="label" track-by="email"
+						 :multiple="true" />
 		</div>
 		<div class="composer-fields"
 			 v-if="hasCC">
@@ -28,7 +35,10 @@
 			</label>
 			<Multiselect :options="ccVal"
 						 id="cc"
-						 v-on:keyup="onInputChanged" />
+						 @keyup="onInputChanged"
+						 v-model="selectCc"
+						 label="label" track-by="email"
+						 :multiple="true" />
 		</div>
 		<div class="composer-fields"
 			 v-if="hasCC">
@@ -37,7 +47,10 @@
 			</label>
 			<Multiselect :options="bccVal"
 						 id="bcc"
-						 v-on:keyup="onInputChanged" />
+						 @keyup="onInputChanged"
+						 v-model="selectBcc"
+						 label="label" track-by="email"
+						 :multiple="true" />
 		</div>
 		<div class="composer-fields">
 			<label for="subject" class="subject-label transparency">
@@ -175,11 +188,17 @@
 				saveDraftDebounced: _.debounce(this.saveDraft, 700),
 				state: STATES.EDITING,
 				errorText: undefined,
-				STATES
+				STATES,
+				selectTo: [],
+				selectCc: [],
+				selectBcc: [],
 			}
 		},
 		beforeMount () {
-			this.selectedAlias = this.fromAccount || this.aliases[0].id
+			if (this.fromAccount) {
+				this.selectedAlias = this.aliases.find(alias => alias.id === this.fromAccount)
+			}
+			this.selectedAlias = this.aliases[0]
 		},
 		computed: {
 			aliases () {
@@ -245,6 +264,13 @@
 				this.attachments = []
 				this.errorText = undefined
 				this.state = STATES.EDITING
+			},
+			/**
+			 * Format aliases for the Multiselect
+			 * @returns {string}
+			 */
+			formatAliases(alias) {
+				return `${alias.name} <${alias.emailAddress}>`
 			}
 		}
 	}
@@ -261,24 +287,25 @@
 		margin: 0;
 	}
 
+	.composer-fields.mail-account > .multiselect {
+		width: auto;
+		max-width: none;
+		min-height: auto;
+	}
+
 	.composer-fields {
 		display: flex;
+		align-items: center;
 		border-top: 1px solid #eee;
+		padding-right: 30px;
 	}
 	.composer-fields .multiselect,
 	.composer-fields input,
 	.composer-fields textarea {
 		flex-grow: 1;
 		max-width: none;
-		border-left: none;
-		border-right: none;
-		border-radius: 0px;
-	}
-
-	#to,
-	#cc,
-	#bcc {
 		border: none;
+		border-radius: 0px;
 	}
 
 	#to,
@@ -332,6 +359,8 @@
 		padding-left: 30px;
 		cursor: text;
 		opacity: .5;
+		width: 90px;
+		text-align: right;
 	}
 
 	label.bcc-label {
