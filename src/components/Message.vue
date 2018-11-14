@@ -1,6 +1,11 @@
 <template>
 	<div class="app-content-details">
 		<Loading v-if="loading"/>
+		<Error v-else-if="!message"
+			   :error="error && error.message ? error.message : t('mail', 'Not found')"
+			   :message="errorMessage"
+			   :data="error">
+		</Error>
 		<template v-else>
 			<div id="mail-message-header" class="section">
 				<h2 :title="message.subject">{{message.subject}}</h2>
@@ -24,7 +29,10 @@
 									  :signature="message.signature"/>
 				<MessageAttachments :attachments="message.attachments" />
 				<div id="reply-composer"></div>
-				<input type="button" id="forward-button" value="Forward">
+				<input type="button"
+					   id="forward-button"
+					   value="Forward"
+					   @click="forwardMessage">
 			</div>
 			<Composer v-if="!message.hasHtmlBody || htmlBodyLoaded"
 					  :fromAccount="message.accountId"
@@ -49,6 +57,8 @@
 		buildReplySubject,
 	} from '../ReplyBuilder'
 	import Composer from './Composer'
+	import Error from './Error'
+	import {getRandomMessageErrorMessage} from '../util/ErrorMessageFactory'
 	import {htmlToText} from '../util/HtmlHelper'
 	import MessageHTMLBody from './MessageHTMLBody'
 	import MessagePlainTextBody from './MessagePlainTextBody'
@@ -59,10 +69,11 @@
 	export default {
 		name: 'Message',
 		components: {
-			MessageAttachments,
-			Loading,
 			AddressList,
 			Composer,
+			Error,
+			Loading,
+			MessageAttachments,
 			MessageHTMLBody,
 			MessagePlainTextBody,
 		},
@@ -70,6 +81,8 @@
 			return {
 				loading: true,
 				message: undefined,
+				errorMessage: '',
+				error: undefined,
 				htmlBodyLoaded: false,
 				replyRecipient: {},
 				replySubject: '',
@@ -104,6 +117,8 @@
 			fetchMessage () {
 				this.loading = true
 				this.message = undefined
+				this.errorMessage = ''
+				this.error = undefined
 				this.replyRecipient = {}
 				this.replySubject = ''
 				this.replyBody = ''
@@ -111,38 +126,60 @@
 
 				const messageUid = this.$route.params.messageUid
 
-				this.$store.dispatch(
-					'fetchMessage', messageUid).then(message => {
-					this.message = message
+				this.$store.dispatch('fetchMessage', messageUid)
+					.then(message => {
+						this.message = message
 
-					this.replyRecipient = buildReplyRecipients(message, {}) // TODO: own address
-					this.replySubject = buildReplySubject(message.subject)
+						if (_.isUndefined(this.message)) {
+							console.info('message could not be found', messageUid)
+							this.errorMessage = getRandomMessageErrorMessage()
+							this.loading = false
+							return
+						}
 
-					if (!message.hasHtmlBody) {
-						this.setReplyText(message.body)
-					}
+						this.replyRecipient = buildReplyRecipients(message, {}) // TODO: own address
+						this.replySubject = buildReplySubject(message.subject)
 
-					this.loading = false
+						if (!message.hasHtmlBody) {
+							this.setReplyText(message.body)
+						}
 
-					// TODO: add timeout so that message isn't flagged when only viewed
-					// for a few seconds
-					if (message.uid !== this.$route.params.messageUid) {
-						console.debug('User navigated away, loaded message won\'t be flagged as seen')
-						return
-					}
+						this.loading = false
 
-					const envelope = this.$store.getters.getEnvelope(message.accountId, message.folderId, message.id);
-					if (!envelope.flags.unseen) {
-						// Already seen -> no change necessary
-						return
-					}
+						// TODO: add timeout so that message isn't flagged when only viewed
+						// for a few seconds
+						if (message.uid !== this.$route.params.messageUid) {
+							console.debug('User navigated away, loaded message won\'t be flagged as seen')
+							return
+						}
 
-					return this.$store.dispatch('toggleEnvelopeSeen', envelope)
-				}).catch(console.error.bind(this))
+						const envelope = this.$store.getters.getEnvelope(message.accountId, message.folderId, message.id);
+						if (!envelope.flags.unseen) {
+							// Already seen -> no change necessary
+							return
+						}
+
+						return this.$store.dispatch('toggleEnvelopeSeen', envelope)
+					})
+					.catch(err => {
+						console.error('could not load message ', messageUid, err)
+						if (err.isError) {
+							this.errorMessage = t('mail', 'Could not load your message')
+							this.error = err
+							this.loading = false
+						}
+					})
 			},
 			setReplyText (text) {
+				const bodyText = htmlToText(text)
+
+				this.$store.commit('setMessageBodyText', {
+					uid: this.message.uid,
+					bodyText,
+				})
+
 				this.replyBody = buildReplyBody(
-					htmlToText(text),
+					this.message.bodyText,
 					this.message.from[0],
 					this.message.dateInt,
 				)
@@ -158,6 +195,19 @@
 			sendReply (data) {
 				return sendMessage(data.account, data)
 			},
+			forwardMessage () {
+				this.$router.push({
+					name: 'message',
+					params: {
+						accountId: this.$route.params.accountId,
+						folderId: this.$route.params.folderId,
+						messageUid: 'new',
+					},
+					query: {
+						uid: this.message.uid,
+					}
+				});
+			}
 		}
 	}
 </script>
