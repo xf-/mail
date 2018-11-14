@@ -288,9 +288,9 @@
 	}
 
 	.composer-fields.mail-account > .multiselect {
-		width: auto;
 		max-width: none;
 		min-height: auto;
+		width: 350px;
 	}
 
 	.composer-fields {
