@@ -20,6 +20,7 @@
  *
  */
 
+import _ from 'lodash'
 import Axios from 'nextcloud-axios'
 import {generateUrl} from 'nextcloud-server/dist/router'
 
@@ -51,3 +52,5 @@ export const fetchAvatarUrl = email => {
 			return Promise.reject(err)
 		})
 }
+
+export const fetchAvatarUrlMemoized = _.memoize(fetchAvatarUrl)

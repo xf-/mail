@@ -31,6 +31,8 @@
 	import _ from 'lodash'
 	import {Avatar as BaseAvatar} from 'nextcloud-vue'
 
+	import {fetchAvatarUrlMemoized} from '../service/AvatarService'
+
 	export default {
 		name: 'Avatar',
 		props: {
@@ -57,7 +59,7 @@
 			BaseAvatar
 		},
 		mounted () {
-			this.$store.dispatch('fetchAvatarUrl', this.email)
+			fetchAvatarUrlMemoized(this.email)
 				.then(url => {
 					this.avatarUrl = url
 					this.loading = false
