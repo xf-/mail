@@ -1,63 +1,64 @@
 const path = require('path');
 const { VueLoaderPlugin } = require('vue-loader');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
 	entry: path.join(__dirname, 'src/main.js'),
 	output: {
 		path: path.resolve(__dirname, 'js'),
 		publicPath: '/js/',
-		filename: 'mail.js'
+		filename: 'mail.js',
 	},
 	node: {
-		fs: 'empty'
+		fs: 'empty',
 	},
 	module: {
 		rules: [
 			{
 				test: /davclient/,
-				use: 'exports-loader?dav'
+				use: 'exports-loader?dav',
 			},
 			{
 				test: /ical/,
-				use: 'exports-loader?ICAL'
+				use: 'exports-loader?ICAL',
 			},
 			{
 				test: /\.css$/,
-				use: ['vue-style-loader', 'css-loader']
+				use: ['vue-style-loader', 'css-loader'],
 			},
 			{
 				test: /\.scss$/,
-				use: ['vue-style-loader', 'css-loader', 'sass-loader']
+				use: ['vue-style-loader', 'css-loader', 'sass-loader'],
 			},
 			{
 				test: /\.vue$/,
-				loader: 'vue-loader'
+				loader: 'vue-loader',
 			},
 			{
 				test: /\.js$/,
 				loader: 'babel-loader',
-				exclude: /node_modules/
+				exclude: /node_modules/,
 			},
 			{
 				test: /\.(png|jpg|gif)$/,
 				loader: 'file-loader',
 				options: {
-					name: '[name].[ext]?[hash]'
-				}
+					name: '[name].[ext]?[hash]',
+				},
 			},
 			{
 				test: /\.(svg)$/i,
 				use: [
 					{
-						loader: 'url-loader'
-					}
-				]
-			}
-		]
+						loader: 'url-loader',
+					},
+				],
+			},
+		],
 	},
-	plugins: [new VueLoaderPlugin()],
+	plugins: [new VueLoaderPlugin(), new BundleAnalyzerPlugin()],
 	resolve: {
 		extensions: ['*', '.js', '.vue', '.json'],
-		symlinks: false
-	}
-};
+		symlinks: false,
+	},
+}
